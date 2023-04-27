@@ -1,0 +1,10 @@
+name: 'PR Lint'
+description: 'Check PR descriptions and titles for correctness'
+outputs:
+  pass:
+    description: 'If the checks passed or not'
+  errors:
+    description: 'Detailed error information'
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
