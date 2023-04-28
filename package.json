@@ -4,7 +4,7 @@
   "description": "A GitHub Action to lint PR descriptions and titles",
   "main": "dist/index.js",
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node16 --outfile=dist/index.js",
+    "build": "node ./build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
