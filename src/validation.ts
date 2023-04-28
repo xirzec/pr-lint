@@ -35,6 +35,13 @@ function fileNameContainsArea(fileName: string, area: string): boolean {
   }
 
   const pieces = fileName.split("/", 3);
+  let normalizedAreaName = area.toLowerCase();
+  if (normalizedAreaName.includes("/")) {
+    const areaPieces = normalizedAreaName.split("/");
+    if (areaPieces.length === 2 && areaPieces[1]) {
+      normalizedAreaName = areaPieces[1];
+    }
+  }
   if (pieces.length === 3) {
     if (pieces[0] === "sdk" && pieces[2]?.toLowerCase() === area.toLowerCase()) {
       return true;
