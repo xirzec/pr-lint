@@ -7822,7 +7822,7 @@ function fileNameContainsArea(fileName, area) {
     }
   }
   if (pieces.length === 3) {
-    if (pieces[0] === "sdk" && ((_a = pieces[2]) == null ? void 0 : _a.toLowerCase()) === area.toLowerCase()) {
+    if (pieces[0] === "sdk" && ((_a = pieces[2]) == null ? void 0 : _a.toLowerCase()) === normalizedAreaName) {
       return true;
     }
   }

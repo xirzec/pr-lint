@@ -43,7 +43,7 @@ function fileNameContainsArea(fileName: string, area: string): boolean {
     }
   }
   if (pieces.length === 3) {
-    if (pieces[0] === "sdk" && pieces[2]?.toLowerCase() === area.toLowerCase()) {
+    if (pieces[0] === "sdk" && pieces[2]?.toLowerCase() === normalizedAreaName) {
       return true;
     }
   }
