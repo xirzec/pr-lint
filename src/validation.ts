@@ -38,4 +38,11 @@ const validationRules: Array<ValidationRule> = [
       return undefined;
     },
   },
+  {
+    id: "title-contains-package-name-or-area",
+    kind: "title",
+    validate: (_text: string) => {
+      return undefined;
+    },
+  },
 ];

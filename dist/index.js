@@ -2081,7 +2081,7 @@ var require_core = __commonJS({
       process.env["PATH"] = `${inputPath}${path.delimiter}${process.env["PATH"]}`;
     }
     exports.addPath = addPath;
-    function getInput(name, options) {
+    function getInput2(name, options) {
       const val = process.env[`INPUT_${name.replace(/ /g, "_").toUpperCase()}`] || "";
       if (options && options.required && !val) {
         throw new Error(`Input required and not supplied: ${name}`);
@@ -2091,9 +2091,9 @@ var require_core = __commonJS({
       }
       return val.trim();
     }
-    exports.getInput = getInput;
+    exports.getInput = getInput2;
     function getMultilineInput(name, options) {
-      const inputs = getInput(name, options).split("\n").filter((x) => x !== "");
+      const inputs = getInput2(name, options).split("\n").filter((x) => x !== "");
       if (options && options.trimWhitespace === false) {
         return inputs;
       }
@@ -2103,7 +2103,7 @@ var require_core = __commonJS({
     function getBooleanInput(name, options) {
       const trueValue = ["true", "True", "TRUE"];
       const falseValue = ["false", "False", "FALSE"];
-      const val = getInput(name, options);
+      const val = getInput2(name, options);
       if (trueValue.includes(val))
         return true;
       if (falseValue.includes(val))
@@ -7761,11 +7761,11 @@ var require_github = __commonJS({
     var Context = __importStar(require_context());
     var utils_1 = require_utils4();
     exports.context = new Context.Context();
-    function getOctokit(token, options, ...additionalPlugins) {
+    function getOctokit2(token, options, ...additionalPlugins) {
       const GitHubWithPlugins = utils_1.GitHub.plugin(...additionalPlugins);
       return new GitHubWithPlugins(utils_1.getOctokitOptions(token, options));
     }
-    exports.getOctokit = getOctokit;
+    exports.getOctokit = getOctokit2;
   }
 });
 
@@ -7821,30 +7821,50 @@ var validationRules = [
       }
       return void 0;
     }
+  },
+  {
+    id: "title-contains-package-name-or-area",
+    kind: "title",
+    validate: (_text) => {
+      return void 0;
+    }
   }
 ];
 
 // src/index.ts
-function main() {
-  var _a, _b;
-  try {
-    actions.setOutput("errors", "");
-    const title = String((_a = github.context.payload.pull_request) == null ? void 0 : _a["title"]);
-    const body = ((_b = github.context.payload.pull_request) == null ? void 0 : _b.body) ?? "";
-    const errors = validatePullRequest(title, body);
-    if (errors.length > 0) {
-      for (const error2 of errors) {
-        actions.error(error2.message);
-      }
-      actions.setOutput("errors", JSON.stringify(errors));
-      actions.setFailed("Pull request validation failed");
+async function main() {
+  var _a, _b, _c;
+  actions.setOutput("errors", "");
+  const token = actions.getInput("repo-token", { required: true });
+  const octokit = github.getOctokit(token);
+  const iterator = octokit.paginate.iterator(octokit.rest.pulls.listFiles, {
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo,
+    pull_number: ((_a = github.context.payload.pull_request) == null ? void 0 : _a.number) ?? 0,
+    per_page: 100
+  });
+  for await (const page of iterator) {
+    for (const file of page.data) {
+      actions.info(`File: ${file.filename}`);
     }
+  }
+  const title = String((_b = github.context.payload.pull_request) == null ? void 0 : _b["title"]);
+  const body = ((_c = github.context.payload.pull_request) == null ? void 0 : _c.body) ?? "";
+  const errors = validatePullRequest(title, body);
+  if (errors.length > 0) {
+    for (const error2 of errors) {
+      actions.error(error2.message);
+    }
+    actions.setOutput("errors", JSON.stringify(errors));
+    actions.setFailed("Pull request validation failed");
+  } else {
     actions.info("All checks passed");
-  } catch (error2) {
-    actions.setFailed(getErrorMessage(error2));
   }
 }
-main();
+main().catch((error2) => {
+  actions.error("Unexpected error occurred.");
+  actions.setFailed(getErrorMessage(error2));
+});
 /*! Bundled license information:
 
 is-plain-object/dist/is-plain-object.js:
