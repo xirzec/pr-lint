@@ -2378,17 +2378,17 @@ var require_register = __commonJS({
 var require_add = __commonJS({
   "node_modules/before-after-hook/lib/add.js"(exports, module) {
     module.exports = addHook;
-    function addHook(state, kind, name, hook) {
+    function addHook(state, kind3, name, hook) {
       var orig = hook;
       if (!state.registry[name]) {
         state.registry[name] = [];
       }
-      if (kind === "before") {
+      if (kind3 === "before") {
         hook = function(method, options) {
           return Promise.resolve().then(orig.bind(null, options)).then(method.bind(null, options));
         };
       }
-      if (kind === "after") {
+      if (kind3 === "after") {
         hook = function(method, options) {
           var result;
           return Promise.resolve().then(method.bind(null, options)).then(function(result_) {
@@ -2399,7 +2399,7 @@ var require_add = __commonJS({
           });
         };
       }
-      if (kind === "error") {
+      if (kind3 === "error") {
         hook = function(method, options) {
           return Promise.resolve().then(method.bind(null, options)).catch(function(error2) {
             return orig(error2, options);
@@ -2448,9 +2448,9 @@ var require_before_after_hook = __commonJS({
       );
       hook.api = { remove: removeHookRef };
       hook.remove = removeHookRef;
-      ["before", "error", "after", "wrap"].forEach(function(kind) {
-        var args = name ? [state, kind, name] : [state, kind];
-        hook[kind] = hook.api[kind] = bindable(addHook, null).apply(null, args);
+      ["before", "error", "after", "wrap"].forEach(function(kind3) {
+        var args = name ? [state, kind3, name] : [state, kind3];
+        hook[kind3] = hook.api[kind3] = bindable(addHook, null).apply(null, args);
       });
     }
     function HookSingular() {
@@ -5263,22 +5263,22 @@ var require_lib3 = __commonJS({
       entries: { enumerable: true }
     });
     function getHeaders(headers) {
-      let kind = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : "key+value";
+      let kind3 = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : "key+value";
       const keys = Object.keys(headers[MAP]).sort();
-      return keys.map(kind === "key" ? function(k) {
+      return keys.map(kind3 === "key" ? function(k) {
         return k.toLowerCase();
-      } : kind === "value" ? function(k) {
+      } : kind3 === "value" ? function(k) {
         return headers[MAP][k].join(", ");
       } : function(k) {
         return [k.toLowerCase(), headers[MAP][k].join(", ")];
       });
     }
     var INTERNAL = Symbol("internal");
-    function createHeadersIterator(target, kind) {
+    function createHeadersIterator(target, kind3) {
       const iterator = Object.create(HeadersIteratorPrototype);
       iterator[INTERNAL] = {
         target,
-        kind,
+        kind: kind3,
         index: 0
       };
       return iterator;
@@ -5289,8 +5289,8 @@ var require_lib3 = __commonJS({
           throw new TypeError("Value of `this` is not a HeadersIterator");
         }
         var _INTERNAL = this[INTERNAL];
-        const target = _INTERNAL.target, kind = _INTERNAL.kind, index = _INTERNAL.index;
-        const values = getHeaders(target, kind);
+        const target = _INTERNAL.target, kind3 = _INTERNAL.kind, index = _INTERNAL.index;
+        const values = getHeaders(target, kind3);
         const len = values.length;
         if (index >= len) {
           return {
@@ -7796,17 +7796,36 @@ function isError(error2) {
   }
 }
 
-// src/validation.ts
-var META_AREAS = ["engsys", "core", "docs", "repo"];
-function validatePullRequest(title, body, files) {
-  const errors = [];
-  for (const rule of validationRules) {
-    const result = rule.validate(rule.kind === "title" ? title : body, files);
-    if (result) {
-      errors.push(result);
+// src/rules/noEmptyBody.ts
+var ruleId = "no-empty-body";
+var kind = "body";
+var noEmptyBody = {
+  id: ruleId,
+  kind,
+  validate: (text) => {
+    if (text.trim().length === 0) {
+      return {
+        ruleId,
+        kind,
+        message: "Pull request body is empty."
+      };
     }
+    return void 0;
   }
-  return errors;
+};
+
+// src/rules/rules.ts
+var META_AREAS = ["engsys", "core", "docs", "repo"];
+
+// src/rules/titleContainsArea.ts
+var ruleId2 = "title-contains-area";
+var kind2 = "title";
+function validationError(message) {
+  return {
+    ruleId: ruleId2,
+    kind: kind2,
+    message
+  };
 }
 function fileNameContainsArea(fileName, area) {
   var _a;
@@ -7828,66 +7847,50 @@ function fileNameContainsArea(fileName, area) {
   }
   return false;
 }
-var validationRules = [
-  {
-    id: "no-empty-body",
-    kind: "body",
-    validate: (text) => {
-      if (text.trim().length === 0) {
-        return {
-          ruleId: "no-empty-body",
-          kind: "body",
-          message: "Pull request body is empty."
-        };
+var titleContainsArea = {
+  id: ruleId2,
+  kind: kind2,
+  validate: (text, files) => {
+    var _a, _b;
+    const result = text.match(/^\[(\S+)\](.+)$/);
+    if (result) {
+      const area = (_a = result[1]) == null ? void 0 : _a.trim();
+      if (!area) {
+        return validationError(
+          `PR Title must start with a package name or service folder surrounded by square brackets, e.g. [core-util]`
+        );
       }
-      return void 0;
+      const description = (_b = result[2]) == null ? void 0 : _b.trim();
+      if (!description) {
+        return validationError(`PR Title must include a description.`);
+      }
+      if (META_AREAS.includes(area)) {
+        return void 0;
+      }
+      if (files.some((file) => fileNameContainsArea(file, area))) {
+        return void 0;
+      }
+      const areaList = META_AREAS.join(",");
+      return validationError(
+        `Area ${area} not recognized. If this isn't a package or service folder, use one of ${areaList}.`
+      );
     }
-  },
-  {
-    id: "title-contains-package-name-or-area",
-    kind: "title",
-    validate: (text, files) => {
-      var _a, _b;
-      const result = text.match(/^\[(\S+)\](.+)$/);
-      if (result) {
-        const area = (_a = result[1]) == null ? void 0 : _a.trim();
-        if (!area) {
-          return {
-            ruleId: "title-contains-package-name-or-area",
-            kind: "title",
-            message: `PR Title must start with a package name or service folder surrounded by square brackets, e.g. [core-util]`
-          };
-        }
-        const description = (_b = result[2]) == null ? void 0 : _b.trim();
-        if (!description) {
-          return {
-            ruleId: "title-contains-package-name-or-area",
-            kind: "title",
-            message: `PR Title must include a description.`
-          };
-        }
-        if (META_AREAS.includes(area)) {
-          return void 0;
-        }
-        if (files.some((file) => fileNameContainsArea(file, area))) {
-          return void 0;
-        }
-        return {
-          ruleId: "title-contains-package-name-or-area",
-          kind: "title",
-          message: `Area ${area} not recognized. If this isn't a package or service folder, use one of ${META_AREAS.join(
-            ","
-          )}.`
-        };
-      }
-      return {
-        ruleId: "title-contains-package-name-or-area",
-        kind: "title",
-        message: "Title must follow the format [package-name] description"
-      };
+    return validationError("Title must follow the format [package-name] description");
+  }
+};
+
+// src/validation.ts
+function validatePullRequest(title, body, files) {
+  const errors = [];
+  for (const rule of validationRules) {
+    const result = rule.validate(rule.kind === "title" ? title : body, files);
+    if (result) {
+      errors.push(result);
     }
   }
-];
+  return errors;
+}
+var validationRules = [noEmptyBody, titleContainsArea];
 
 // src/index.ts
 async function getPRInfo() {
