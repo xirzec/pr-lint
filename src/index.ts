@@ -29,6 +29,7 @@ async function getPRInfo() {
 async function main() {
   actions.setOutput("errors", "");
   const { title, body, files } = await getPRInfo();
+  actions.info(files.join(","));
 
   const errors = validatePullRequest(title, body, files);
   if (errors.length > 0) {
