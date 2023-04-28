@@ -4,7 +4,7 @@
   "description": "A GitHub Action to lint PR descriptions and titles",
   "main": "dist/index.js",
   "scripts": {
-    "build": "ncc build src/index.ts --target es2020 --license licenses.txt",
+    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node16 --outfile=dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -19,7 +19,7 @@
     "@actions/github": "^5.1.1"
   },
   "devDependencies": {
-    "@vercel/ncc": "^0.36.1",
+    "esbuild": "0.17.18",
     "prettier": "^2.8.8",
     "typescript": "^5.0.4"
   }
