@@ -1,10 +1,12 @@
-name: 'PR Lint'
-description: 'Check PR descriptions and titles for correctness'
+name: "PR Lint"
+description: "Check PR descriptions and titles for correctness"
+inputs:
+  repo-token:
+    description: "The GitHub token to use for authentication"
+    required: true
 outputs:
-  pass:
-    description: 'If the checks passed or not'
   errors:
-    description: 'Detailed error information'
+    description: "Detailed error information"
 runs:
-  using: 'node16'
-  main: 'dist/index.js'
+  using: "node16"
+  main: "dist/index.js"

@@ -4,13 +4,11 @@ This action lints Pull Requests for correctness by checking the body and title.
 
 ## Inputs
 
-// tbd
+### `repo-token`
+
+**Required** The GitHub token to use for authentication.
 
 ## Outputs
-
-### `pass`
-
-`true` if checks have succeeded, `false` if not.
 
 ### `errors`
 
