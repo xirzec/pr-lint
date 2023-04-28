@@ -7797,15 +7797,29 @@ function isError(error2) {
 }
 
 // src/validation.ts
-function validatePullRequest(title, body) {
+var META_AREAS = ["engsys", "core", "docs", "repo"];
+function validatePullRequest(title, body, files) {
   const errors = [];
   for (const rule of validationRules) {
-    const result = rule.validate(rule.kind === "title" ? title : body);
+    const result = rule.validate(rule.kind === "title" ? title : body, files);
     if (result) {
       errors.push(result);
     }
   }
   return errors;
+}
+function fileNameContainsArea(fileName, area) {
+  var _a;
+  if (fileName.startsWith(`sdk/${area}/`)) {
+    return true;
+  }
+  const pieces = fileName.split("/", 3);
+  if (pieces.length === 3) {
+    if (pieces[0] === "sdk" && ((_a = pieces[2]) == null ? void 0 : _a.toLowerCase()) === area.toLowerCase()) {
+      return true;
+    }
+  }
+  return false;
 }
 var validationRules = [
   {
@@ -7825,16 +7839,52 @@ var validationRules = [
   {
     id: "title-contains-package-name-or-area",
     kind: "title",
-    validate: (_text) => {
-      return void 0;
+    validate: (text, files) => {
+      var _a, _b;
+      const result = text.match(/^\[(\S+)\](.+)$/);
+      if (result) {
+        const area = (_a = result[1]) == null ? void 0 : _a.trim();
+        if (!area) {
+          return {
+            ruleId: "title-contains-package-name-or-area",
+            kind: "title",
+            message: `PR Title must start with a package name or service folder surrounded by square brackets, e.g. [core-util]`
+          };
+        }
+        const description = (_b = result[2]) == null ? void 0 : _b.trim();
+        if (!description) {
+          return {
+            ruleId: "title-contains-package-name-or-area",
+            kind: "title",
+            message: `PR Title must include a description.`
+          };
+        }
+        if (META_AREAS.includes(area)) {
+          return void 0;
+        }
+        if (files.some((file) => fileNameContainsArea(file, area))) {
+          return void 0;
+        }
+        return {
+          ruleId: "title-contains-package-name-or-area",
+          kind: "title",
+          message: `Area ${area} not recognized. If this isn't a package or service folder, use one of ${META_AREAS.join(
+            ","
+          )}.`
+        };
+      }
+      return {
+        ruleId: "title-contains-package-name-or-area",
+        kind: "title",
+        message: "Title must follow the format [package-name] description"
+      };
     }
   }
 ];
 
 // src/index.ts
-async function main() {
+async function getPRInfo() {
   var _a, _b, _c;
-  actions.setOutput("errors", "");
   const token = actions.getInput("repo-token", { required: true });
   const octokit = github.getOctokit(token);
   const iterator = octokit.paginate.iterator(octokit.rest.pulls.listFiles, {
@@ -7843,14 +7893,24 @@ async function main() {
     pull_number: ((_a = github.context.payload.pull_request) == null ? void 0 : _a.number) ?? 0,
     per_page: 100
   });
+  const files = [];
   for await (const page of iterator) {
     for (const file of page.data) {
-      actions.info(`File: ${file.filename}`);
+      files.push(file.filename);
     }
   }
   const title = String((_b = github.context.payload.pull_request) == null ? void 0 : _b["title"]);
   const body = ((_c = github.context.payload.pull_request) == null ? void 0 : _c.body) ?? "";
-  const errors = validatePullRequest(title, body);
+  return {
+    title,
+    body,
+    files
+  };
+}
+async function main() {
+  actions.setOutput("errors", "");
+  const { title, body, files } = await getPRInfo();
+  const errors = validatePullRequest(title, body, files);
   if (errors.length > 0) {
     for (const error2 of errors) {
       actions.error(error2.message);
