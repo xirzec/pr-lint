@@ -750,18 +750,18 @@ var require_tunnel = __commonJS({
             res.statusCode
           );
           socket.destroy();
-          var error = new Error("tunneling socket could not be established, statusCode=" + res.statusCode);
-          error.code = "ECONNRESET";
-          options.request.emit("error", error);
+          var error2 = new Error("tunneling socket could not be established, statusCode=" + res.statusCode);
+          error2.code = "ECONNRESET";
+          options.request.emit("error", error2);
           self.removeSocket(placeholder);
           return;
         }
         if (head.length > 0) {
           debug("got illegal response body from proxy");
           socket.destroy();
-          var error = new Error("got illegal response body from proxy");
-          error.code = "ECONNRESET";
-          options.request.emit("error", error);
+          var error2 = new Error("got illegal response body from proxy");
+          error2.code = "ECONNRESET";
+          options.request.emit("error", error2);
           self.removeSocket(placeholder);
           return;
         }
@@ -776,9 +776,9 @@ var require_tunnel = __commonJS({
           cause.message,
           cause.stack
         );
-        var error = new Error("tunneling socket could not be established, cause=" + cause.message);
-        error.code = "ECONNRESET";
-        options.request.emit("error", error);
+        var error2 = new Error("tunneling socket could not be established, cause=" + cause.message);
+        error2.code = "ECONNRESET";
+        options.request.emit("error", error2);
         self.removeSocket(placeholder);
       }
     };
@@ -1143,12 +1143,12 @@ var require_lib = __commonJS({
             throw new Error("Client has already been disposed.");
           }
           const parsedUrl = new URL(requestUrl);
-          let info = this._prepareRequest(verb, parsedUrl, headers);
+          let info2 = this._prepareRequest(verb, parsedUrl, headers);
           const maxTries = this._allowRetries && RetryableHttpVerbs.includes(verb) ? this._maxRetries + 1 : 1;
           let numTries = 0;
           let response;
           do {
-            response = yield this.requestRaw(info, data);
+            response = yield this.requestRaw(info2, data);
             if (response && response.message && response.message.statusCode === HttpCodes.Unauthorized) {
               let authenticationHandler;
               for (const handler of this.handlers) {
@@ -1158,7 +1158,7 @@ var require_lib = __commonJS({
                 }
               }
               if (authenticationHandler) {
-                return authenticationHandler.handleAuthentication(this, info, data);
+                return authenticationHandler.handleAuthentication(this, info2, data);
               } else {
                 return response;
               }
@@ -1181,8 +1181,8 @@ var require_lib = __commonJS({
                   }
                 }
               }
-              info = this._prepareRequest(verb, parsedRedirectUrl, headers);
-              response = yield this.requestRaw(info, data);
+              info2 = this._prepareRequest(verb, parsedRedirectUrl, headers);
+              response = yield this.requestRaw(info2, data);
               redirectsRemaining--;
             }
             if (!response.message.statusCode || !HttpResponseRetryCodes.includes(response.message.statusCode)) {
@@ -1211,7 +1211,7 @@ var require_lib = __commonJS({
        * @param info
        * @param data
        */
-      requestRaw(info, data) {
+      requestRaw(info2, data) {
         return __awaiter(this, void 0, void 0, function* () {
           return new Promise((resolve, reject) => {
             function callbackForResult(err, res) {
@@ -1223,7 +1223,7 @@ var require_lib = __commonJS({
                 resolve(res);
               }
             }
-            this.requestRawWithCallback(info, data, callbackForResult);
+            this.requestRawWithCallback(info2, data, callbackForResult);
           });
         });
       }
@@ -1233,12 +1233,12 @@ var require_lib = __commonJS({
        * @param data
        * @param onResult
        */
-      requestRawWithCallback(info, data, onResult) {
+      requestRawWithCallback(info2, data, onResult) {
         if (typeof data === "string") {
-          if (!info.options.headers) {
-            info.options.headers = {};
+          if (!info2.options.headers) {
+            info2.options.headers = {};
           }
-          info.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
+          info2.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
         }
         let callbackCalled = false;
         function handleResult(err, res) {
@@ -1247,7 +1247,7 @@ var require_lib = __commonJS({
             onResult(err, res);
           }
         }
-        const req = info.httpModule.request(info.options, (msg) => {
+        const req = info2.httpModule.request(info2.options, (msg) => {
           const res = new HttpClientResponse(msg);
           handleResult(void 0, res);
         });
@@ -1259,7 +1259,7 @@ var require_lib = __commonJS({
           if (socket) {
             socket.end();
           }
-          handleResult(new Error(`Request timeout: ${info.options.path}`));
+          handleResult(new Error(`Request timeout: ${info2.options.path}`));
         });
         req.on("error", function(err) {
           handleResult(err);
@@ -1286,27 +1286,27 @@ var require_lib = __commonJS({
         return this._getAgent(parsedUrl);
       }
       _prepareRequest(method, requestUrl, headers) {
-        const info = {};
-        info.parsedUrl = requestUrl;
-        const usingSsl = info.parsedUrl.protocol === "https:";
-        info.httpModule = usingSsl ? https : http;
+        const info2 = {};
+        info2.parsedUrl = requestUrl;
+        const usingSsl = info2.parsedUrl.protocol === "https:";
+        info2.httpModule = usingSsl ? https : http;
         const defaultPort = usingSsl ? 443 : 80;
-        info.options = {};
-        info.options.host = info.parsedUrl.hostname;
-        info.options.port = info.parsedUrl.port ? parseInt(info.parsedUrl.port) : defaultPort;
-        info.options.path = (info.parsedUrl.pathname || "") + (info.parsedUrl.search || "");
-        info.options.method = method;
-        info.options.headers = this._mergeHeaders(headers);
+        info2.options = {};
+        info2.options.host = info2.parsedUrl.hostname;
+        info2.options.port = info2.parsedUrl.port ? parseInt(info2.parsedUrl.port) : defaultPort;
+        info2.options.path = (info2.parsedUrl.pathname || "") + (info2.parsedUrl.search || "");
+        info2.options.method = method;
+        info2.options.headers = this._mergeHeaders(headers);
         if (this.userAgent != null) {
-          info.options.headers["user-agent"] = this.userAgent;
+          info2.options.headers["user-agent"] = this.userAgent;
         }
-        info.options.agent = this._getAgent(info.parsedUrl);
+        info2.options.agent = this._getAgent(info2.parsedUrl);
         if (this.handlers) {
           for (const handler of this.handlers) {
-            handler.prepareRequest(info.options);
+            handler.prepareRequest(info2.options);
           }
         }
-        return info;
+        return info2;
       }
       _mergeHeaders(headers) {
         if (this.requestOptions && this.requestOptions.headers) {
@@ -1605,12 +1605,12 @@ var require_oidc_utils = __commonJS({
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
           const httpclient = OidcClient.createHttpClient();
-          const res = yield httpclient.getJson(id_token_url).catch((error) => {
+          const res = yield httpclient.getJson(id_token_url).catch((error2) => {
             throw new Error(`Failed to get ID Token. 
  
-        Error Code : ${error.statusCode}
+        Error Code : ${error2.statusCode}
  
-        Error Message: ${error.result.message}`);
+        Error Message: ${error2.result.message}`);
           });
           const id_token = (_a = res.result) === null || _a === void 0 ? void 0 : _a.value;
           if (!id_token) {
@@ -1631,8 +1631,8 @@ var require_oidc_utils = __commonJS({
             const id_token = yield OidcClient.getCall(id_token_url);
             core_1.setSecret(id_token);
             return id_token;
-          } catch (error) {
-            throw new Error(`Error message: ${error.message}`);
+          } catch (error2) {
+            throw new Error(`Error message: ${error2.message}`);
           }
         });
       }
@@ -2127,7 +2127,7 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
     exports.setCommandEcho = setCommandEcho;
     function setFailed2(message) {
       process.exitCode = ExitCode.Failure;
-      error(message);
+      error2(message);
     }
     exports.setFailed = setFailed2;
     function isDebug() {
@@ -2138,10 +2138,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       command_1.issueCommand("debug", {}, message);
     }
     exports.debug = debug;
-    function error(message, properties = {}) {
+    function error2(message, properties = {}) {
       command_1.issueCommand("error", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
-    exports.error = error;
+    exports.error = error2;
     function warning(message, properties = {}) {
       command_1.issueCommand("warning", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
@@ -2150,10 +2150,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       command_1.issueCommand("notice", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
     exports.notice = notice;
-    function info(message) {
+    function info2(message) {
       process.stdout.write(message + os.EOL);
     }
-    exports.info = info;
+    exports.info = info2;
     function startGroup(name) {
       command_1.issue("group", name);
     }
@@ -2401,8 +2401,8 @@ var require_add = __commonJS({
       }
       if (kind === "error") {
         hook = function(method, options) {
-          return Promise.resolve().then(method.bind(null, options)).catch(function(error) {
-            return orig(error, options);
+          return Promise.resolve().then(method.bind(null, options)).catch(function(error2) {
+            return orig(error2, options);
           });
         };
       }
@@ -3089,21 +3089,21 @@ var require_tr46 = __commonJS({
         label = punycode.toUnicode(label);
         processing_option = PROCESSING_OPTIONS.NONTRANSITIONAL;
       }
-      var error = false;
+      var error2 = false;
       if (normalize(label) !== label || label[3] === "-" && label[4] === "-" || label[0] === "-" || label[label.length - 1] === "-" || label.indexOf(".") !== -1 || label.search(combiningMarksRegex) === 0) {
-        error = true;
+        error2 = true;
       }
       var len = countSymbols(label);
       for (var i = 0; i < len; ++i) {
         var status = findStatus(label.codePointAt(i));
         if (processing === PROCESSING_OPTIONS.TRANSITIONAL && status[1] !== "valid" || processing === PROCESSING_OPTIONS.NONTRANSITIONAL && status[1] !== "valid" && status[1] !== "deviation") {
-          error = true;
+          error2 = true;
           break;
         }
       }
       return {
         label,
-        error
+        error: error2
       };
     }
     function processing(domain_name, useSTD3, processing_option) {
@@ -4755,8 +4755,8 @@ var require_lib3 = __commonJS({
       this.timeout = timeout;
       if (body instanceof Stream) {
         body.on("error", function(err) {
-          const error = err.name === "AbortError" ? err : new FetchError(`Invalid response body while trying to fetch ${_this.url}: ${err.message}`, "system", err);
-          _this[INTERNALS].error = error;
+          const error2 = err.name === "AbortError" ? err : new FetchError(`Invalid response body while trying to fetch ${_this.url}: ${err.message}`, "system", err);
+          _this[INTERNALS].error = error2;
         });
       }
     }
@@ -5604,14 +5604,14 @@ var require_lib3 = __commonJS({
         const signal = request.signal;
         let response = null;
         const abort = function abort2() {
-          let error = new AbortError("The user aborted a request.");
-          reject(error);
+          let error2 = new AbortError("The user aborted a request.");
+          reject(error2);
           if (request.body && request.body instanceof Stream.Readable) {
-            destroyStream(request.body, error);
+            destroyStream(request.body, error2);
           }
           if (!response || !response.body)
             return;
-          response.body.emit("error", error);
+          response.body.emit("error", error2);
         };
         if (signal && signal.aborted) {
           abort();
@@ -6064,7 +6064,7 @@ var require_dist_node5 = __commonJS({
         }
         if (status >= 400) {
           const data = await getResponseData(response);
-          const error = new requestError.RequestError(toErrorMessage(data), status, {
+          const error2 = new requestError.RequestError(toErrorMessage(data), status, {
             response: {
               url,
               status,
@@ -6073,7 +6073,7 @@ var require_dist_node5 = __commonJS({
             },
             request: requestOptions
           });
-          throw error;
+          throw error2;
         }
         return getResponseData(response);
       }).then((data) => {
@@ -6083,10 +6083,10 @@ var require_dist_node5 = __commonJS({
           headers,
           data
         };
-      }).catch((error) => {
-        if (error instanceof requestError.RequestError)
-          throw error;
-        throw new requestError.RequestError(error.message, 500, {
+      }).catch((error2) => {
+        if (error2 instanceof requestError.RequestError)
+          throw error2;
+        throw new requestError.RequestError(error2.message, 500, {
           request: requestOptions
         });
       });
@@ -7599,9 +7599,9 @@ var require_dist_node10 = __commonJS({
               return {
                 value: normalizedResponse
               };
-            } catch (error) {
-              if (error.status !== 409)
-                throw error;
+            } catch (error2) {
+              if (error2.status !== 409)
+                throw error2;
               url = "";
               return {
                 value: {
@@ -7770,41 +7770,78 @@ var require_github = __commonJS({
 });
 
 // src/index.ts
-var import_core = __toESM(require_core(), 1);
+var actions = __toESM(require_core(), 1);
 var github = __toESM(require_github(), 1);
 
 // src/util.ts
-function getErrorMessage(error) {
-  if (isError(error)) {
-    return error.message;
+function getErrorMessage(error2) {
+  if (isError(error2)) {
+    return error2.message;
   } else {
     let errorString = "[Could not stringify error]";
     try {
-      errorString = JSON.stringify(error);
-    } catch (error2) {
+      errorString = JSON.stringify(error2);
+    } catch (error3) {
     }
     return `Unexpected error thrown: ${errorString}`;
   }
 }
-function isError(error) {
-  if (error instanceof Error) {
+function isError(error2) {
+  if (error2 instanceof Error) {
     return true;
-  } else if (typeof error === "object" && error !== null) {
-    return "message" in error && "name" in error;
+  } else if (typeof error2 === "object" && error2 !== null) {
+    return "message" in error2 && "name" in error2;
   } else {
     return false;
   }
 }
 
+// src/validation.ts
+function validatePullRequest(title, body) {
+  const errors = [];
+  for (const rule of validationRules) {
+    const result = rule.validate(rule.kind === "title" ? title : body);
+    if (result) {
+      errors.push(result);
+    }
+  }
+  return errors;
+}
+var validationRules = [
+  {
+    id: "no-empty-body",
+    kind: "body",
+    validate: (text) => {
+      if (text.trim().length === 0) {
+        return {
+          ruleId: "no-empty-body",
+          kind: "body",
+          message: "Pull request body is empty."
+        };
+      }
+      return void 0;
+    }
+  }
+];
+
 // src/index.ts
 function main() {
+  var _a, _b;
   try {
-    (0, import_core.setOutput)("pass", true);
-    (0, import_core.setOutput)("errors", "");
-    const payload = JSON.stringify(github.context.payload, void 0, 2);
-    console.log(`The event payload: ${payload}`);
-  } catch (error) {
-    (0, import_core.setFailed)(getErrorMessage(error));
+    actions.setOutput("errors", "");
+    const title = String((_a = github.context.payload.pull_request) == null ? void 0 : _a["title"]);
+    const body = ((_b = github.context.payload.pull_request) == null ? void 0 : _b.body) ?? "";
+    const errors = validatePullRequest(title, body);
+    if (errors.length > 0) {
+      for (const error2 of errors) {
+        actions.error(error2.message);
+      }
+      actions.setOutput("errors", JSON.stringify(errors));
+      actions.setFailed("Pull request validation failed");
+    }
+    actions.info("All checks passed");
+  } catch (error2) {
+    actions.setFailed(getErrorMessage(error2));
   }
 }
 main();
