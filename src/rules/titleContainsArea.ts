@@ -1,4 +1,4 @@
-import { META_AREAS, ValidationError, ValidationRule } from "./rules.js";
+import { META_AREAS, ValidationError, ValidationInput, ValidationRule } from "./rules.js";
 
 const ruleId = "title-contains-area";
 const kind = "title";
@@ -36,7 +36,7 @@ function fileNameContainsArea(fileName: string, area: string): boolean {
 export const titleContainsArea: ValidationRule = {
   id: ruleId,
   kind,
-  validate: (text: string, files: string[]) => {
+  validate: ({ text, files }: ValidationInput) => {
     const result = text.match(/^\[(\S+)\](.+)$/);
     if (result) {
       const area = result[1]?.trim();

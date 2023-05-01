@@ -2378,17 +2378,17 @@ var require_register = __commonJS({
 var require_add = __commonJS({
   "node_modules/before-after-hook/lib/add.js"(exports, module) {
     module.exports = addHook;
-    function addHook(state, kind3, name, hook) {
+    function addHook(state, kind4, name, hook) {
       var orig = hook;
       if (!state.registry[name]) {
         state.registry[name] = [];
       }
-      if (kind3 === "before") {
+      if (kind4 === "before") {
         hook = function(method, options) {
           return Promise.resolve().then(orig.bind(null, options)).then(method.bind(null, options));
         };
       }
-      if (kind3 === "after") {
+      if (kind4 === "after") {
         hook = function(method, options) {
           var result;
           return Promise.resolve().then(method.bind(null, options)).then(function(result_) {
@@ -2399,7 +2399,7 @@ var require_add = __commonJS({
           });
         };
       }
-      if (kind3 === "error") {
+      if (kind4 === "error") {
         hook = function(method, options) {
           return Promise.resolve().then(method.bind(null, options)).catch(function(error2) {
             return orig(error2, options);
@@ -2448,9 +2448,9 @@ var require_before_after_hook = __commonJS({
       );
       hook.api = { remove: removeHookRef };
       hook.remove = removeHookRef;
-      ["before", "error", "after", "wrap"].forEach(function(kind3) {
-        var args = name ? [state, kind3, name] : [state, kind3];
-        hook[kind3] = hook.api[kind3] = bindable(addHook, null).apply(null, args);
+      ["before", "error", "after", "wrap"].forEach(function(kind4) {
+        var args = name ? [state, kind4, name] : [state, kind4];
+        hook[kind4] = hook.api[kind4] = bindable(addHook, null).apply(null, args);
       });
     }
     function HookSingular() {
@@ -5263,22 +5263,22 @@ var require_lib3 = __commonJS({
       entries: { enumerable: true }
     });
     function getHeaders(headers) {
-      let kind3 = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : "key+value";
+      let kind4 = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : "key+value";
       const keys = Object.keys(headers[MAP]).sort();
-      return keys.map(kind3 === "key" ? function(k) {
+      return keys.map(kind4 === "key" ? function(k) {
         return k.toLowerCase();
-      } : kind3 === "value" ? function(k) {
+      } : kind4 === "value" ? function(k) {
         return headers[MAP][k].join(", ");
       } : function(k) {
         return [k.toLowerCase(), headers[MAP][k].join(", ")];
       });
     }
     var INTERNAL = Symbol("internal");
-    function createHeadersIterator(target, kind3) {
+    function createHeadersIterator(target, kind4) {
       const iterator = Object.create(HeadersIteratorPrototype);
       iterator[INTERNAL] = {
         target,
-        kind: kind3,
+        kind: kind4,
         index: 0
       };
       return iterator;
@@ -5289,8 +5289,8 @@ var require_lib3 = __commonJS({
           throw new TypeError("Value of `this` is not a HeadersIterator");
         }
         var _INTERNAL = this[INTERNAL];
-        const target = _INTERNAL.target, kind3 = _INTERNAL.kind, index = _INTERNAL.index;
-        const values = getHeaders(target, kind3);
+        const target = _INTERNAL.target, kind4 = _INTERNAL.kind, index = _INTERNAL.index;
+        const values = getHeaders(target, kind4);
         const len = values.length;
         if (index >= len) {
           return {
@@ -7802,7 +7802,7 @@ var kind = "body";
 var noEmptyBody = {
   id: ruleId,
   kind,
-  validate: (text) => {
+  validate: ({ text }) => {
     if (text.trim().length === 0) {
       return {
         ruleId,
@@ -7850,7 +7850,7 @@ function fileNameContainsArea(fileName, area) {
 var titleContainsArea = {
   id: ruleId2,
   kind: kind2,
-  validate: (text, files) => {
+  validate: ({ text, files }) => {
     var _a, _b;
     const result = text.match(/^\[(\S+)\](.+)$/);
     if (result) {
@@ -7879,18 +7879,80 @@ var titleContainsArea = {
   }
 };
 
+// src/markdown.ts
+function* readLine(text) {
+  const lines = text.split(/\r?\n/);
+  for (const line of lines) {
+    yield line;
+  }
+}
+function getTitle(line) {
+  const match = line.trim().match(/^#+\s*(.+)$/);
+  if (match && match[1]) {
+    return match[1];
+  }
+  return "";
+}
+function parseSections(body) {
+  let frontMatter = "";
+  let currentSection;
+  const sections = [];
+  for (const line of readLine(body)) {
+    if (line.trim().startsWith("#")) {
+      currentSection = {
+        title: getTitle(line),
+        body: ""
+      };
+      sections.push(currentSection);
+    } else if (currentSection) {
+      currentSection.body += line;
+    } else {
+      frontMatter += line;
+    }
+  }
+  return {
+    frontMatter,
+    sections
+  };
+}
+
+// src/rules/noEmptySection.ts
+var ruleId3 = "no-empty-section";
+var kind3 = "body";
+var noEmptySection = {
+  id: ruleId3,
+  kind: kind3,
+  validate: ({ description }) => {
+    for (const section of description.sections) {
+      if (section.body.trim().length === 0) {
+        return {
+          ruleId: ruleId3,
+          kind: kind3,
+          message: `Section ${section.title} cannot be empty. Please add text or remove this section.`
+        };
+      }
+    }
+    return void 0;
+  }
+};
+
 // src/validation.ts
 function validatePullRequest(title, body, files) {
   const errors = [];
+  const description = parseSections(body);
   for (const rule of validationRules) {
-    const result = rule.validate(rule.kind === "title" ? title : body, files);
+    const result = rule.validate({
+      text: rule.kind === "title" ? title : body,
+      files,
+      description
+    });
     if (result) {
       errors.push(result);
     }
   }
   return errors;
 }
-var validationRules = [noEmptyBody, titleContainsArea];
+var validationRules = [noEmptyBody, titleContainsArea, noEmptySection];
 
 // src/index.ts
 async function getPRInfo() {
