@@ -1,9 +1,9 @@
 import * as actions from "@actions/core";
 import * as github from "@actions/github";
 import { getErrorMessage } from "./util.js";
-import { validatePullRequest } from "./validation.js";
+import { ValidatePullRequestOptions, validatePullRequest } from "./validation.js";
 
-async function getPRInfo() {
+async function getPRInfo(): Promise<ValidatePullRequestOptions> {
   const token = actions.getInput("repo-token", { required: true });
   const octokit = github.getOctokit(token);
   const iterator = octokit.paginate.iterator(octokit.rest.pulls.listFiles, {
@@ -20,18 +20,20 @@ async function getPRInfo() {
   }
   const title = String(github.context.payload.pull_request?.["title"]);
   const body = github.context.payload.pull_request?.body ?? "";
+  const requiredSections = actions.getMultilineInput("required-sections");
   return {
     title,
     body,
     files,
+    requiredSections,
   };
 }
 async function main() {
   actions.setOutput("errors", "");
-  const { title, body, files } = await getPRInfo();
-  actions.debug(`Files included in PR: ${files.join(",")}`);
+  const options = await getPRInfo();
+  actions.debug(`Files included in PR: ${options.files.join(",")}`);
 
-  const errors = validatePullRequest(title, body, files);
+  const errors = validatePullRequest(options);
   if (errors.length > 0) {
     for (const error of errors) {
       actions.error(error.message);

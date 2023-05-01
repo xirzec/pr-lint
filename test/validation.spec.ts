@@ -2,6 +2,7 @@ import { assert } from "chai";
 import { validatePullRequest } from "../src/validation.js";
 import { noEmptyBody } from "../src/rules/noEmptyBody.js";
 import { titleContainsArea } from "../src/rules/titleContainsArea.js";
+import { hasRequiredSections } from "../src/rules/hasRequiredSections.js";
 
 describe("Validation", function () {
   it("validatePullRequest runs against rules", function () {
@@ -96,6 +97,46 @@ describe("Rules", function () {
         description: { sections: [{ title: "test", body: "some text here" }] },
       });
       assert.isDefined(result);
+    });
+  });
+
+  describe("has-required-sections", function () {
+    it("fails when required section is not found", function () {
+      const result = hasRequiredSections.validate({
+        text: "",
+        files: [],
+        description: { sections: [{ title: "test", body: "" }] },
+        requiredSections: ["foo"],
+      });
+      assert.isDefined(result);
+    });
+    it("allows for optional sections", function () {
+      const result = hasRequiredSections.validate({
+        text: "",
+        files: [],
+        description: {
+          sections: [
+            { title: "section 1", body: "some text here" },
+            { title: "section 2", body: "some more text" },
+          ],
+        },
+        requiredSections: ["section 1"],
+      });
+      assert.isUndefined(result);
+    });
+    it("allows for required sections to be longer than required", function () {
+      const result = hasRequiredSections.validate({
+        text: "",
+        files: [],
+        description: {
+          sections: [
+            { title: "section 1: with extra bonus content", body: "some text here" },
+            { title: "section 2", body: "some more text" },
+          ],
+        },
+        requiredSections: ["section 1"],
+      });
+      assert.isUndefined(result);
     });
   });
 });

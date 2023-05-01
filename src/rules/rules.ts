@@ -8,6 +8,7 @@ export interface ValidationInput {
   text: string;
   files: string[];
   description: PRDescription;
+  requiredSections?: string[];
 }
 
 export interface ValidationRule {

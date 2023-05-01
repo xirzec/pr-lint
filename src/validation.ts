@@ -4,11 +4,18 @@ import { titleContainsArea } from "./rules/titleContainsArea.js";
 import { parseSections } from "./markdown.js";
 import { noEmptySection } from "./rules/noEmptySection.js";
 
-export function validatePullRequest(
-  title: string,
-  body: string,
-  files: string[]
-): Array<ValidationError> {
+export interface ValidatePullRequestOptions {
+  title: string;
+  body: string;
+  files: string[];
+  requiredSections?: string[];
+}
+export function validatePullRequest({
+  title,
+  body,
+  files,
+  requiredSections,
+}: ValidatePullRequestOptions): Array<ValidationError> {
   const errors: ValidationError[] = [];
   const description = parseSections(body);
   for (const rule of validationRules) {
@@ -16,6 +23,7 @@ export function validatePullRequest(
       text: rule.kind === "title" ? title : body,
       files,
       description,
+      requiredSections,
     });
     if (result) {
       errors.push(result);
