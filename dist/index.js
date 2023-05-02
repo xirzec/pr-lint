@@ -2100,7 +2100,7 @@ var require_core = __commonJS({
       return inputs.map((input) => input.trim());
     }
     exports.getMultilineInput = getMultilineInput2;
-    function getBooleanInput(name, options) {
+    function getBooleanInput2(name, options) {
       const trueValue = ["true", "True", "TRUE"];
       const falseValue = ["false", "False", "FALSE"];
       const val = getInput2(name, options);
@@ -2111,7 +2111,7 @@ var require_core = __commonJS({
       throw new TypeError(`Input does not meet YAML 1.2 "Core Schema" specification: ${name}
 Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
     }
-    exports.getBooleanInput = getBooleanInput;
+    exports.getBooleanInput = getBooleanInput2;
     function setOutput2(name, value) {
       const filePath = process.env["GITHUB_OUTPUT"] || "";
       if (filePath) {
@@ -7802,6 +7802,7 @@ var kind = "body";
 var noEmptyBody = {
   id: ruleId,
   kind,
+  disableFlag: "allow-empty-body",
   validate: ({ text }) => {
     if (text.trim().length === 0) {
       return {
@@ -7850,6 +7851,7 @@ function fileNameContainsArea(fileName, area) {
 var titleContainsArea = {
   id: ruleId2,
   kind: kind2,
+  disableFlag: "disable-title-contains-area",
   validate: ({ text, files }) => {
     var _a, _b;
     const result = text.match(/^\[(\S+)\](.+)$/);
@@ -7922,6 +7924,7 @@ var kind3 = "body";
 var noEmptySection = {
   id: ruleId3,
   kind: kind3,
+  disableFlag: "allow-empty-section",
   validate: ({ description }) => {
     for (const section of description.sections) {
       if (section.body.trim().length === 0) {
@@ -7967,11 +7970,15 @@ function validatePullRequest({
   title,
   body,
   files,
-  requiredSections
+  requiredSections,
+  disableFlags
 }) {
   const errors = [];
   const description = parseSections(body);
   for (const rule of validationRules) {
+    if (rule.disableFlag && (disableFlags == null ? void 0 : disableFlags.has(rule.disableFlag))) {
+      continue;
+    }
     const result = rule.validate({
       text: rule.kind === "title" ? title : body,
       files,
@@ -7990,6 +7997,15 @@ var validationRules = [
   noEmptySection,
   hasRequiredSections
 ];
+function getAllDisableFlags() {
+  const flags = /* @__PURE__ */ new Set();
+  for (const rule of validationRules) {
+    if (rule.disableFlag) {
+      flags.add(rule.disableFlag);
+    }
+  }
+  return flags;
+}
 
 // src/index.ts
 async function getPRInfo() {
@@ -8011,11 +8027,19 @@ async function getPRInfo() {
   const title = String((_b = github.context.payload.pull_request) == null ? void 0 : _b["title"]);
   const body = ((_c = github.context.payload.pull_request) == null ? void 0 : _c.body) ?? "";
   const requiredSections = actions.getMultilineInput("required-sections");
+  const knownDisableFlags = getAllDisableFlags();
+  const disableFlags = /* @__PURE__ */ new Set();
+  for (const flag of knownDisableFlags) {
+    if (actions.getBooleanInput(flag)) {
+      disableFlags.add(flag);
+    }
+  }
   return {
     title,
     body,
     files,
-    requiredSections
+    requiredSections,
+    disableFlags
   };
 }
 async function main() {

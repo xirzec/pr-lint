@@ -10,7 +10,19 @@ This action lints Pull Requests for correctness by checking the body and title.
 
 ### `required-sections`
 
-If there are particular body sections (markdown headings) to require being present. Checks are made using `startsWith` so you don't need to write out the entire header.
+If there are particular body sections (markdown headings) to require being present. Checks are not case sensitive and are made using `startsWith` so you don't need to write out the entire header.
+
+### `allow-empty-body`
+
+Boolean. Disables checking for empty PR body.
+
+### `disable-title-contains-area`
+
+Boolean. Disables checking title for area slug.
+
+### `allow-empty-section`
+
+Boolean. Allows PR body to have empty markdown sections.
 
 ## Outputs
 

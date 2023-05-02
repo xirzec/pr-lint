@@ -14,6 +14,7 @@ export interface ValidationInput {
 export interface ValidationRule {
   id: string;
   kind: RuleKind;
+  disableFlag?: string;
   validate: (input: ValidationInput) => ValidationError | undefined;
 }
 

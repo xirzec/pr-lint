@@ -7,6 +7,18 @@ inputs:
   required-sections:
     description: "The sections that are required in the PR description"
     required: false
+  allow-empty-body:
+    description: "Disables checking for empty PR body"
+    required: false
+    default: false
+  disable-title-contains-area:
+    description: "Disables checking title for area slug"
+    required: false
+    default: false
+  allow-empty-section:
+    description: "Allows PR body to have empty markdown sections"
+    required: false
+    default: false
 outputs:
   errors:
     description: "Detailed error information"

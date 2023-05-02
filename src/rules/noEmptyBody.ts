@@ -6,6 +6,7 @@ const kind = "body";
 export const noEmptyBody: ValidationRule = {
   id: ruleId,
   kind,
+  disableFlag: "allow-empty-body",
   validate: ({ text }: ValidationInput) => {
     if (text.trim().length === 0) {
       return {

@@ -6,6 +6,7 @@ const kind = "body";
 export const noEmptySection: ValidationRule = {
   id: ruleId,
   kind,
+  disableFlag: "allow-empty-section",
   validate: ({ description }: ValidationInput) => {
     for (const section of description.sections) {
       if (section.body.trim().length === 0) {

@@ -13,6 +13,15 @@ describe("Validation", function () {
       "Expected no-empty-body to fail"
     );
   });
+  it("disableFlags skip rules", function () {
+    const errors = validatePullRequest({
+      title: "",
+      body: "",
+      files: [],
+      disableFlags: new Set(["allow-empty-body", "disable-title-contains-area"]),
+    });
+    assert.isEmpty(errors);
+  });
 });
 
 describe("Rules", function () {

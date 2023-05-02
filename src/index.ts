@@ -1,7 +1,11 @@
 import * as actions from "@actions/core";
 import * as github from "@actions/github";
 import { getErrorMessage } from "./util.js";
-import { ValidatePullRequestOptions, validatePullRequest } from "./validation.js";
+import {
+  ValidatePullRequestOptions,
+  getAllDisableFlags,
+  validatePullRequest,
+} from "./validation.js";
 
 async function getPRInfo(): Promise<ValidatePullRequestOptions> {
   const token = actions.getInput("repo-token", { required: true });
@@ -21,11 +25,20 @@ async function getPRInfo(): Promise<ValidatePullRequestOptions> {
   const title = String(github.context.payload.pull_request?.["title"]);
   const body = github.context.payload.pull_request?.body ?? "";
   const requiredSections = actions.getMultilineInput("required-sections");
+  const knownDisableFlags = getAllDisableFlags();
+  const disableFlags = new Set<string>();
+  for (const flag of knownDisableFlags) {
+    if (actions.getBooleanInput(flag)) {
+      disableFlags.add(flag);
+    }
+  }
+
   return {
     title,
     body,
     files,
     requiredSections,
+    disableFlags,
   };
 }
 async function main() {

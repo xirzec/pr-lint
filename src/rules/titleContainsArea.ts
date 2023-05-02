@@ -36,6 +36,7 @@ function fileNameContainsArea(fileName: string, area: string): boolean {
 export const titleContainsArea: ValidationRule = {
   id: ruleId,
   kind,
+  disableFlag: "disable-title-contains-area",
   validate: ({ text, files }: ValidationInput) => {
     const result = text.match(/^\[(\S+)\](.+)$/);
     if (result) {
