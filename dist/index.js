@@ -2092,14 +2092,14 @@ var require_core = __commonJS({
       return val.trim();
     }
     exports.getInput = getInput2;
-    function getMultilineInput(name, options) {
+    function getMultilineInput2(name, options) {
       const inputs = getInput2(name, options).split("\n").filter((x) => x !== "");
       if (options && options.trimWhitespace === false) {
         return inputs;
       }
       return inputs.map((input) => input.trim());
     }
-    exports.getMultilineInput = getMultilineInput;
+    exports.getMultilineInput = getMultilineInput2;
     function getBooleanInput(name, options) {
       const trueValue = ["true", "True", "TRUE"];
       const falseValue = ["false", "False", "FALSE"];
@@ -7937,14 +7937,20 @@ var noEmptySection = {
 };
 
 // src/validation.ts
-function validatePullRequest(title, body, files) {
+function validatePullRequest({
+  title,
+  body,
+  files,
+  requiredSections
+}) {
   const errors = [];
   const description = parseSections(body);
   for (const rule of validationRules) {
     const result = rule.validate({
       text: rule.kind === "title" ? title : body,
       files,
-      description
+      description,
+      requiredSections
     });
     if (result) {
       errors.push(result);
@@ -7973,17 +7979,22 @@ async function getPRInfo() {
   }
   const title = String((_b = github.context.payload.pull_request) == null ? void 0 : _b["title"]);
   const body = ((_c = github.context.payload.pull_request) == null ? void 0 : _c.body) ?? "";
+  const maybeRequiredSections = actions.getInput("required-sections");
+  console.log(`Required sections variable looks like: ${maybeRequiredSections}`);
+  const requiredSections = actions.getMultilineInput("required-sections");
+  console.log(`get multiline is returning: ${JSON.stringify(requiredSections)}`);
   return {
     title,
     body,
-    files
+    files,
+    requiredSections
   };
 }
 async function main() {
   actions.setOutput("errors", "");
-  const { title, body, files } = await getPRInfo();
-  actions.debug(`Files included in PR: ${files.join(",")}`);
-  const errors = validatePullRequest(title, body, files);
+  const options = await getPRInfo();
+  actions.debug(`Files included in PR: ${options.files.join(",")}`);
+  const errors = validatePullRequest(options);
   if (errors.length > 0) {
     for (const error2 of errors) {
       actions.error(error2.message);
