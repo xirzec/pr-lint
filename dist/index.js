@@ -2378,17 +2378,17 @@ var require_register = __commonJS({
 var require_add = __commonJS({
   "node_modules/before-after-hook/lib/add.js"(exports, module) {
     module.exports = addHook;
-    function addHook(state, kind4, name, hook) {
+    function addHook(state, kind5, name, hook) {
       var orig = hook;
       if (!state.registry[name]) {
         state.registry[name] = [];
       }
-      if (kind4 === "before") {
+      if (kind5 === "before") {
         hook = function(method, options) {
           return Promise.resolve().then(orig.bind(null, options)).then(method.bind(null, options));
         };
       }
-      if (kind4 === "after") {
+      if (kind5 === "after") {
         hook = function(method, options) {
           var result;
           return Promise.resolve().then(method.bind(null, options)).then(function(result_) {
@@ -2399,7 +2399,7 @@ var require_add = __commonJS({
           });
         };
       }
-      if (kind4 === "error") {
+      if (kind5 === "error") {
         hook = function(method, options) {
           return Promise.resolve().then(method.bind(null, options)).catch(function(error2) {
             return orig(error2, options);
@@ -2448,9 +2448,9 @@ var require_before_after_hook = __commonJS({
       );
       hook.api = { remove: removeHookRef };
       hook.remove = removeHookRef;
-      ["before", "error", "after", "wrap"].forEach(function(kind4) {
-        var args = name ? [state, kind4, name] : [state, kind4];
-        hook[kind4] = hook.api[kind4] = bindable(addHook, null).apply(null, args);
+      ["before", "error", "after", "wrap"].forEach(function(kind5) {
+        var args = name ? [state, kind5, name] : [state, kind5];
+        hook[kind5] = hook.api[kind5] = bindable(addHook, null).apply(null, args);
       });
     }
     function HookSingular() {
@@ -5263,22 +5263,22 @@ var require_lib3 = __commonJS({
       entries: { enumerable: true }
     });
     function getHeaders(headers) {
-      let kind4 = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : "key+value";
+      let kind5 = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : "key+value";
       const keys = Object.keys(headers[MAP]).sort();
-      return keys.map(kind4 === "key" ? function(k) {
+      return keys.map(kind5 === "key" ? function(k) {
         return k.toLowerCase();
-      } : kind4 === "value" ? function(k) {
+      } : kind5 === "value" ? function(k) {
         return headers[MAP][k].join(", ");
       } : function(k) {
         return [k.toLowerCase(), headers[MAP][k].join(", ")];
       });
     }
     var INTERNAL = Symbol("internal");
-    function createHeadersIterator(target, kind4) {
+    function createHeadersIterator(target, kind5) {
       const iterator = Object.create(HeadersIteratorPrototype);
       iterator[INTERNAL] = {
         target,
-        kind: kind4,
+        kind: kind5,
         index: 0
       };
       return iterator;
@@ -5289,8 +5289,8 @@ var require_lib3 = __commonJS({
           throw new TypeError("Value of `this` is not a HeadersIterator");
         }
         var _INTERNAL = this[INTERNAL];
-        const target = _INTERNAL.target, kind4 = _INTERNAL.kind, index = _INTERNAL.index;
-        const values = getHeaders(target, kind4);
+        const target = _INTERNAL.target, kind5 = _INTERNAL.kind, index = _INTERNAL.index;
+        const values = getHeaders(target, kind5);
         const len = values.length;
         if (index >= len) {
           return {
@@ -7936,6 +7936,32 @@ var noEmptySection = {
   }
 };
 
+// src/rules/hasRequiredSections.ts
+var ruleId4 = "has-required-sections";
+var kind4 = "body";
+var hasRequiredSections = {
+  id: ruleId4,
+  kind: kind4,
+  validate: ({ description, requiredSections }) => {
+    if (requiredSections) {
+      const titles = description.sections.map((s) => s.title);
+      const missing = requiredSections.filter((requiredSection) => {
+        return !titles.some((title) => {
+          return title.startsWith(requiredSection);
+        });
+      });
+      if (missing.length > 0) {
+        return {
+          ruleId: ruleId4,
+          kind: kind4,
+          message: `Missing required sections: ${missing.join(", ")}`
+        };
+      }
+    }
+    return void 0;
+  }
+};
+
 // src/validation.ts
 function validatePullRequest({
   title,
@@ -7958,7 +7984,12 @@ function validatePullRequest({
   }
   return errors;
 }
-var validationRules = [noEmptyBody, titleContainsArea, noEmptySection];
+var validationRules = [
+  noEmptyBody,
+  titleContainsArea,
+  noEmptySection,
+  hasRequiredSections
+];
 
 // src/index.ts
 async function getPRInfo() {
@@ -7979,10 +8010,7 @@ async function getPRInfo() {
   }
   const title = String((_b = github.context.payload.pull_request) == null ? void 0 : _b["title"]);
   const body = ((_c = github.context.payload.pull_request) == null ? void 0 : _c.body) ?? "";
-  const maybeRequiredSections = actions.getInput("required-sections");
-  console.log(`Required sections variable looks like: ${maybeRequiredSections}`);
   const requiredSections = actions.getMultilineInput("required-sections");
-  console.log(`get multiline is returning: ${JSON.stringify(requiredSections)}`);
   return {
     title,
     body,

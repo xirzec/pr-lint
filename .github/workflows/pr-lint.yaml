@@ -18,6 +18,5 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           required-sections: |
-            foo
-            bar
-            baz
+            Packages impacted by this PR
+            Describe the problem that is addressed by this PR

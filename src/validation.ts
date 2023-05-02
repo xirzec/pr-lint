@@ -3,6 +3,7 @@ import { noEmptyBody } from "./rules/noEmptyBody.js";
 import { titleContainsArea } from "./rules/titleContainsArea.js";
 import { parseSections } from "./markdown.js";
 import { noEmptySection } from "./rules/noEmptySection.js";
+import { hasRequiredSections } from "./rules/hasRequiredSections.js";
 
 export interface ValidatePullRequestOptions {
   title: string;
@@ -32,4 +33,9 @@ export function validatePullRequest({
   return errors;
 }
 
-const validationRules: Array<ValidationRule> = [noEmptyBody, titleContainsArea, noEmptySection];
+const validationRules: Array<ValidationRule> = [
+  noEmptyBody,
+  titleContainsArea,
+  noEmptySection,
+  hasRequiredSections,
+];

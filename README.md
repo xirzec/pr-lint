@@ -34,4 +34,7 @@ jobs:
       - uses: xirzec/pr-lint@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+          required-sections: |
+            Packages impacted by this PR
+            Describe the problem that is addressed by this PR
 ```
