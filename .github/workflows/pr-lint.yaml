@@ -17,4 +17,7 @@ jobs:
       - uses: xirzec/pr-lint@main
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          required-sections: ["foo", "bar"]
+          required-sections: |
+            foo
+            bar
+            baz
