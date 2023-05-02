@@ -6,7 +6,7 @@ import { hasRequiredSections } from "../src/rules/hasRequiredSections.js";
 
 describe("Validation", function () {
   it("validatePullRequest runs against rules", function () {
-    const errors = validatePullRequest("", "", []);
+    const errors = validatePullRequest({ title: "", body: "", files: [] });
     assert.isNotEmpty(errors);
     assert.isTrue(
       errors.some((error) => error.ruleId === "no-empty-body"),
@@ -135,6 +135,18 @@ describe("Rules", function () {
           ],
         },
         requiredSections: ["section 1"],
+      });
+      assert.isUndefined(result);
+    });
+
+    it("is not case sensitive", function () {
+      const result = hasRequiredSections.validate({
+        text: "",
+        files: [],
+        description: {
+          sections: [{ title: "section 1", body: "some text here" }],
+        },
+        requiredSections: ["SECTION 1"],
       });
       assert.isUndefined(result);
     });

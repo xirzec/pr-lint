@@ -7944,10 +7944,10 @@ var hasRequiredSections = {
   kind: kind4,
   validate: ({ description, requiredSections }) => {
     if (requiredSections) {
-      const titles = description.sections.map((s) => s.title);
+      const titles = description.sections.map((s) => s.title.toLowerCase());
       const missing = requiredSections.filter((requiredSection) => {
         return !titles.some((title) => {
-          return title.startsWith(requiredSection);
+          return title.startsWith(requiredSection.toLowerCase());
         });
       });
       if (missing.length > 0) {
