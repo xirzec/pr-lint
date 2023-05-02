@@ -4,6 +4,9 @@ inputs:
   repo-token:
     description: "The GitHub token to use for authentication"
     required: true
+  required-sections:
+    description: "The sections that are required in the PR description"
+    required: false
 outputs:
   errors:
     description: "Detailed error information"

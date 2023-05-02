@@ -20,7 +20,10 @@ async function getPRInfo(): Promise<ValidatePullRequestOptions> {
   }
   const title = String(github.context.payload.pull_request?.["title"]);
   const body = github.context.payload.pull_request?.body ?? "";
+  const maybeRequiredSections = actions.getInput("required-sections");
+  console.log(`Required sections variable looks like: ${maybeRequiredSections}`);
   const requiredSections = actions.getMultilineInput("required-sections");
+  console.log(`get multiline is returning: ${JSON.stringify(requiredSections)}`);
   return {
     title,
     body,
